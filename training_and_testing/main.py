@@ -102,7 +102,7 @@ trainer = pl.Trainer(max_epochs=epochs,
                      logger=wandb_logger,
                      callbacks=callbacks,
                      check_val_every_n_epoch=1,
-                     precision="16-mixed"
+                     precision="64-true"
                      )
 
 if stage == "fit":

@@ -75,7 +75,7 @@ class LitModule(pl.LightningModule):
                                      lr=1e-3,
                                      weight_decay=1e-3,
                                      eps=1e-5,
-                                     fused=True,
+                                     fused=False,
                                      amsgrad=True)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer,
