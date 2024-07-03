@@ -35,9 +35,11 @@ class inD_RecordingDataset(Dataset):
             for id in self.recording_id:
                 with open(f"{path}/{id}_tracks.csv", 'rb') as f:
                     self.data = pd.concat([self.data, pd.read_csv(f, delimiter=',', header=0, usecols=self.features, dtype='float16')])
+                    print(self.data)
         else:
             with open(f"{path}/{recording_id}_tracks.csv", 'rb') as f:
                 self.data = pd.read_csv(f, delimiter=',', header=0, usecols=self.features, dtype='float16')
+                # print(self.data)
 
 
     def __len__(self):
@@ -75,4 +77,5 @@ class inD_RecordingDataset(Dataset):
         data_transforms = transforms.Compose([
             transforms.ToTensor(),
         ])
+
         return data_transforms
