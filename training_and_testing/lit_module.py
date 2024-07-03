@@ -70,32 +70,32 @@ class LitModule(pl.LightningModule):
 
     def configure_optimizers(self):
         parameters = [p for p in self.parameters() if p.requires_grad]
-        # if parameters:
-        optimizer = torch.optim.Adam(self.parameters(),
-                                     lr=1e-3,
-                                     weight_decay=1e-3,
-                                     eps=1e-5,
-                                     fused=False,
-                                     amsgrad=True)
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer,
-            factor=0.2,
-            patience=3,
-            threshold=1e-4,
-            cooldown=2,
-            eps=1e-6,
-            verbose=True,
-        )
-        optimizer_and_scheduler = {
-            "optimizer": optimizer,
-            "lr_scheduler": {
-                "scheduler": scheduler,
-                "monitor": "training_loss",
-                "frequency": 1,
-                "strict": True}
-        }
-        return optimizer_and_scheduler
-        # else:
-        #     return []
+        if parameters:
+            optimizer = torch.optim.Adam(self.parameters(),
+                                        lr=1e-3,
+                                        weight_decay=1e-3,
+                                        eps=1e-5,
+                                        fused=False,
+                                        amsgrad=True)
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+                optimizer,
+                factor=0.2,
+                patience=3,
+                threshold=1e-4,
+                cooldown=2,
+                eps=1e-6,
+                verbose=True,
+            )
+            optimizer_and_scheduler = {
+                "optimizer": optimizer,
+                "lr_scheduler": {
+                    "scheduler": scheduler,
+                    "monitor": "training_loss",
+                    "frequency": 1,
+                    "strict": True}
+            }
+            return optimizer_and_scheduler
+        else:
+            return []
 
 
