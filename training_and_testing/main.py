@@ -18,7 +18,8 @@ import torch
 # import wandb
 from callbacks import create_callbacks
 from lit_datamodule import inD_RecordingModule
-from lit_module import LitModule
+# from lit_module import LitModule
+from lit_module_CA import LitModule
 from utils import create_wandb_logger, get_data_path, build_module
 # from nn_modules import ConstantVelocityModel, MultiLayerPerceptron
 from my_models.physics_based_models import ConstantVelocityModel, ConstantAccelerationModel, SingleTrackModel
