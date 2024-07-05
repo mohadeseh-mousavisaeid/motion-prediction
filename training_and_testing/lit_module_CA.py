@@ -34,20 +34,35 @@ class LitModule(pl.LightningModule):
         return loss
 
     def step(self, batch, batch_idx, string):
-
+        """
+        This is the main step function that is used by training_step, validation_step, and test_step.
+        """
+        # TODO: You have to modify this based on your task, model and data. This is where most of the engineering happens!
         x, y = self.prep_data_for_step(batch)
+        x_acc = x
         y_hat_list = []
         for k in range(self.future_sequence_length):
-            y_hat_k = self(x)
+            x_k = x[:,-2:,0:3]
+            # augment this with your constant acceleration to get a full state vector again
+            x_aug = torch.cat([x_k, x_acc], dim=1)
+            y_hat_k = self(x_aug)
             y_hat_list.append(y_hat_k)
             if y_hat_k.dim() < 3:
                 y_hat_k = y_hat_k.unsqueeze(1)
-            x = torch.cat([x[:, 1:, :], y_hat_k], dim=1)
+            
+        
+            x_center = x[:, :, 1]  # xCenter
+            y_center = x[:, :, 2]  # yCenter
+
+            new_x = torch.stack((x_center, y_center), dim=1)
+
+            x = torch.cat([new_x[:, 1:, :], y_hat_k], dim=1)
 
         y_hat = torch.stack(y_hat_list, dim=1).squeeze()
         loss = F.mse_loss(y_hat, y)
         self.log(f"{string}_loss", loss)
         return loss
+    
 
     def prep_data_for_step(self, batch):
         x = batch[:, :self.past_sequence_length, :]

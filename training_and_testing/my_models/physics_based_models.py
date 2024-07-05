@@ -28,12 +28,12 @@ class ConstantAccelerationModel(nn.Module):
         self.dt = dt
     
     def forward(self, x):
-        x_center = x[:, 1]  # xCenter
-        y_center = x[:, 2]  # yCenter
-        x_velocity = x[:, 4]  # xVelocity
-        y_velocity = x[:, 5]  # yVelocity
-        x_acceleration = x[:, 6]  # xAcceleration
-        y_acceleration = x[:, 7]  # yAcceleration
+        x_center = x[:, :, 1]  # xCenter
+        y_center = x[:, :, 2]  # yCenter
+        x_velocity = x[:, :, 4]  # xVelocity
+        y_velocity = x[:, :, 5]  # yVelocity
+        x_acceleration = x[:, :, 6]  # xAcceleration
+        y_acceleration = x[:, :, 7]  # yAcceleration
 
         # old position + velocity * dt + 0.5 * acceleration * dt^2
         new_x_center = x_center + x_velocity * self.dt + 0.5 * x_acceleration * self.dt**2

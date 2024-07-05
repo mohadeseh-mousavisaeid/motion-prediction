@@ -52,7 +52,7 @@ recording_ID = ["00"]#, "03", "04", "05", "06", "07", "08", "09", "10", "11", "1
 # This is referring to an unmodified dataset. So depending on your goal, modify the dataset and set the features accordingly.
 #  If you change your dataset, you have to change recreate a feature list that suits your dataset
 features, number_of_features = select_features()
-past_sequence_length = 6
+past_sequence_length = 2
 future_sequence_length = 3
 sequence_length = past_sequence_length + future_sequence_length
 
