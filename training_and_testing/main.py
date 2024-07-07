@@ -15,15 +15,17 @@
 import logging
 import pytorch_lightning as pl
 import torch
-# import wandb
+import wandb
 from callbacks import create_callbacks
 from lit_datamodule import inD_RecordingModule
-# from lit_module import LitModule
-from lit_module_CA import LitModule
+
 from utils import create_wandb_logger, get_data_path, build_module
 # from nn_modules import ConstantVelocityModel, MultiLayerPerceptron
-from my_models.physics_based_models import ConstantVelocityModel, ConstantAccelerationModel, SingleTrackModel
-from my_models.data_based_models import MultiLayerPerceptron, RNNModel, LSTMModel
+
+from lit_modules.lit_module_physics_based import LitModule
+# from lit_modules.lit_module import LitModule
+from models.physics_based_models import ConstantVelocityModel, ConstantAccelerationModel, SingleTrackModel
+# from models.data_based_models import MultiLayerPerceptron, RNNModel, LSTMModel
 from select_features import select_features
 
 ##################################################################
@@ -33,7 +35,7 @@ torch.autograd.set_detect_anomaly(True)
 data_path, log_path = get_data_path()
 # TODO: Check out weights and biases. It is a great tool for logging and visualizing your results.
 #  For students, accounts are free!
-# wandb.login()
+wandb.login()
 # TODO: Remove this line if you don't want to use wandb
 ##################################################################
 
@@ -42,8 +44,8 @@ project_name = "SS2024_motion_prediction"
 # TODO: The stages are defined in the lit_datamodule.py file. Right now, we have a train, val, and test stage.
 #  For some of the models you dont actually train anything, like the constant velocity model, you can simply use the test stage.
 #  The test stage should also be used for the final evaluation of any model.
-stage = "fit"
-# stage = "test"
+# stage = "fit"
+stage = "test"
 #################### Training Parameters #####################################
 # TODO: Change the recording_ID to the recordings you want to train on
 recording_ID = ["00"]#, "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32"]
@@ -53,7 +55,7 @@ recording_ID = ["00"]#, "03", "04", "05", "06", "07", "08", "09", "10", "11", "1
 #  If you change your dataset, you have to change recreate a feature list that suits your dataset
 features, number_of_features = select_features()
 past_sequence_length = 2
-future_sequence_length = 3
+future_sequence_length = 2
 sequence_length = past_sequence_length + future_sequence_length
 
 #################### Model Parameters #####################################
@@ -73,8 +75,8 @@ hidden_size = 32
 # Physics Based Model:
 
 # mdl = ConstantVelocityModel()
-mdl = ConstantAccelerationModel()
-# mdl = SingleTrackModel()
+# mdl = ConstantAccelerationModel()
+mdl = SingleTrackModel()
 
 # Data Based Model:
 
@@ -105,10 +107,10 @@ dm.setup(stage=stage)
 #  Simply uncomment some and see what happens! Mostly they save the model, log the model, or do something else.
 callbacks = create_callbacks()
 
-# wandb_logger = create_wandb_logger(log_path, project_name, recording_ID)
-# wandb_logger.experiment.config.update({"batch_size": batch_size,
-#                                        "sequence_length": sequence_length})
-# logging.getLogger(log_path + "/lightning").setLevel(logging.ERROR)
+wandb_logger = create_wandb_logger(log_path, project_name, recording_ID)
+wandb_logger.experiment.config.update({"batch_size": batch_size,
+                                       "sequence_length": sequence_length})
+logging.getLogger(log_path + "/lightning").setLevel(logging.ERROR)
 
 #################### Start Training #####################################
 trainer = pl.Trainer(max_epochs=epochs,
@@ -116,7 +118,7 @@ trainer = pl.Trainer(max_epochs=epochs,
                      devices="auto",
                      accelerator="auto",
                      log_every_n_steps=5,
-                    #  logger=wandb_logger,
+                     logger=wandb_logger,
                      callbacks=callbacks,
                      check_val_every_n_epoch=1,
                      precision="64-true"
@@ -126,5 +128,5 @@ if stage == "fit":
     trainer.fit(model, dm)
 elif stage == "test":
     trainer.test(model, dm)
-# wandb.finish()
+wandb.finish()
 
