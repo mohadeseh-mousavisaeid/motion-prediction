@@ -23,7 +23,7 @@ class ConstantVelocityModel(nn.Module):
         new_positions = torch.stack((new_x_center, new_y_center), dim=1)  # shape: (batch_size, 2)
 
         # Replicate the new_positions to match the number of features
-        new_positions = new_positions.unsqueeze(-1).expand(-1, -1, x.shape[-1])  # shape: (batch_size, 2, number_of_features)
+        # new_positions = new_positions.unsqueeze(-1).expand(-1, -1, x.shape[-1])  # shape: (batch_size, 2, number_of_features)
         
         return new_positions
     
