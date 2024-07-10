@@ -12,15 +12,15 @@ class ConstantVelocityModel(nn.Module):
         x_last = x[:, -1, :]  # shape: (batch_size, number_of_features)
 
         # Extract features from the last time step
-        x_center = x_last[:, 1]  # xCenter
-        y_center = x_last[:, 2]  # yCenter
-        x_velocity = x_last[:, 4]  # xVelocity
-        y_velocity = x_last[:, 5]  # yVelocity
+        x_center = x_last[:, 0]  # xCenter
+        y_center = x_last[:, 1]  # yCenter
+        x_velocity = x_last[:, 2]  # xVelocity
+        y_velocity = x_last[:, 3]  # yVelocity
         
         # old position + velocity * dt
         new_x_center = x_center + self.dt * x_velocity
         new_y_center = y_center + self.dt * y_velocity
-        new_positions = torch.stack((new_x_center, new_y_center), dim=1)  # shape: (batch_size, 2)
+        new_positions = torch.stack((new_x_center, new_y_center, x_velocity, y_velocity), dim=1)  # shape: (batch_size, 2)
 
         # Replicate the new_positions to match the number of features
         # new_positions = new_positions.unsqueeze(-1).expand(-1, -1, x.shape[-1])  # shape: (batch_size, 2, number_of_features)

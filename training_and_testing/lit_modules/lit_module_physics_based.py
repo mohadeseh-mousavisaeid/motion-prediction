@@ -47,18 +47,20 @@ class LitModule(pl.LightningModule):
         """
         # TODO: You have to modify this based on your task, model and data. This is where most of the engineering happens!
         x, y = self.prep_data_for_step(batch)
-
+        features = [1, 2, 4, 5]
+        x_features = x[:, :, features]
         y_hat_list = []
         for k in range(self.future_sequence_length):
-            y_hat_k = self(x)
+            y_hat_k = self(x_features)
             y_hat_list.append(y_hat_k)
-            # if y_hat_k.dim() < 3:
-            #     y_hat_k = y_hat_k.unsqueeze(1)
-            x = torch.cat([x[:, 1:, :], y_hat_k], dim=1)
+            if y_hat_k.dim() < 3:
+                y_hat_k = y_hat_k.unsqueeze(1)
+            x_features = torch.cat([x_features[:, 1:, :], y_hat_k], dim=1)
 
         y_hat = torch.stack(y_hat_list, dim=1).squeeze(dim=2)
-        
-        loss = F.mse_loss(y_hat, y)
+        y_compare = y[:, :, 1:3]
+        y_hat_compare = y_hat[:, :, 0:2]
+        loss = F.mse_loss(y_hat_compare, y_compare)
         self.log(f"{string}_loss", loss)
         return loss
 
