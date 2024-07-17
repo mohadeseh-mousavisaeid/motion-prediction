@@ -14,9 +14,9 @@ def constant_velocity_step(self, batch, batch_idx, string):
     y_hat_list = []
     for k in range(self.future_sequence_length):
         y_hat_k = self(x_features)
-        y_hat_list.append(y_hat_k)
         if y_hat_k.dim() < 3:
             y_hat_k = y_hat_k.unsqueeze(1)
+        y_hat_list.append(y_hat_k)
         x_features = torch.cat([x_features[:, 1:, :], y_hat_k], dim=1)
 
     y_hat = torch.stack(y_hat_list, dim=1).squeeze(dim=2)
@@ -25,6 +25,27 @@ def constant_velocity_step(self, batch, batch_idx, string):
     loss = F.mse_loss(y_hat_compare, y_compare)
     self.log(f"{string}_loss", loss)
     return loss
+
+def constant_accelaration_step(self, batch, batch_idx, string):
+   
+    x, y = prep_data_for_step(self, batch)
+    features = [1, 2, 4, 5, 6, 7]
+    x_features = x[:, :, features]
+    y_hat_list = []
+    for k in range(self.future_sequence_length):
+        y_hat_k = self(x_features)
+        if y_hat_k.dim() < 3:
+            y_hat_k = y_hat_k.unsqueeze(1)
+        y_hat_list.append(y_hat_k)
+        x_features = torch.cat([x_features[:, 1:, :], y_hat_k], dim=1)
+
+    y_hat = torch.stack(y_hat_list, dim=1).squeeze(dim=2)
+    y_compare = y[:, :, 1:3]
+    y_hat_compare = y_hat[:, :, 0:2]
+    loss = F.mse_loss(y_hat_compare, y_compare)
+    self.log(f"{string}_loss", loss)
+    return loss
+
 
 
 def mlp_step(self, batch, batch_idx, string):

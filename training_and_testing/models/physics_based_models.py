@@ -20,7 +20,7 @@ class ConstantVelocityModel(nn.Module):
         # old position + velocity * dt
         new_x_center = x_center + self.dt * x_velocity
         new_y_center = y_center + self.dt * y_velocity
-        new_positions = torch.stack((new_x_center, new_y_center, x_velocity, y_velocity), dim=1)  # shape: (batch_size, 2)
+        new_positions = torch.stack((new_x_center, new_y_center, x_velocity, y_velocity), dim=1)  # shape: (batch_size, 4)
 
         # Replicate the new_positions to match the number of features
         # new_positions = new_positions.unsqueeze(-1).expand(-1, -1, x.shape[-1])  # shape: (batch_size, 2, number_of_features)
@@ -38,22 +38,22 @@ class ConstantAccelerationModel(nn.Module):
         x_last = x[:, -1, :]  # shape: (batch_size, number_of_features)
 
         # Extract features from the last time step
-        x_center = x_last[:, 1]  # xCenter
-        y_center = x_last[:, 2]  # yCenter
-        x_velocity = x_last[:, 4]  # xVelocity
-        y_velocity = x_last[:, 5]  # yVelocity
-        x_acceleration = x_last[:, 6]  # xAcceleration
-        y_acceleration = x_last[:, 7]  # yAcceleration
+        x_center = x_last[:, 0]  # xCenter
+        y_center = x_last[:, 1]  # yCenter
+        x_velocity = x_last[:, 2]  # xVelocity
+        y_velocity = x_last[:, 3]  # yVelocity
+        x_acceleration = x_last[:, 4]  # xAcceleration
+        y_acceleration = x_last[:, 5]  # yAcceleration
 
         # Calculate new positions based on constant acceleration model
         new_x_center = x_center + x_velocity * self.dt + 0.5 * x_acceleration * self.dt**2
         new_y_center = y_center + y_velocity * self.dt + 0.5 * y_acceleration * self.dt**2
 
         # Create new positions tensor with the shape (batch_size, 2)
-        new_positions = torch.stack((new_x_center, new_y_center), dim=1)  # shape: (batch_size, 2)
+        new_positions = torch.stack((new_x_center, new_y_center,x_velocity, y_velocity,x_acceleration,y_acceleration), dim=1)  # shape: (batch_size, 6)
         
         # Replicate the new_positions to match the number of features
-        new_positions = new_positions.unsqueeze(-1).expand(-1, -1, x.shape[-1])  # shape: (batch_size, 2, number_of_features)
+        # new_positions = new_positions.unsqueeze(-1).expand(-1, -1, x.shape[-1])  # shape: (batch_size, 2, number_of_features)
         
         return new_positions
 

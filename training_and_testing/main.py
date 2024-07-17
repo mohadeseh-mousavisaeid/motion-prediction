@@ -72,8 +72,8 @@ hidden_size = 32
 #  defined as a class. The class should inherit from torch.nn.Module. Check out the MLPModel class in the nn_modules.py!
 
 ######## Physics Based Model:
-mdl = ConstantVelocityModel()
-# mdl = ConstantAccelerationModel()
+# mdl = ConstantVelocityModel()
+mdl = ConstantAccelerationModel()
 # mdl = SingleTrackModel()
 
 ####### Data Based Model:
@@ -96,7 +96,7 @@ dm = inD_RecordingModule(data_path, recording_ID, sequence_length, past_sequence
 #################### Setup Training #####################################
 # TODO: Change the epochs to the number of epochs you want to train
 epochs = 1
-model = LitModule(mdl, number_of_features, sequence_length, past_sequence_length, future_sequence_length, batch_size, Model.CONSTANT_VELOCITY.value)
+model = LitModule(mdl, number_of_features, sequence_length, past_sequence_length, future_sequence_length, batch_size, Model.CONSTANT_ACCELARATION.value)
 
 dm.setup(stage=stage)
 
