@@ -54,9 +54,11 @@ class LSTMModel(nn.Module):
         self.fc = nn.Linear(hidden_dim, output_dim)
 
     def forward(self, x):
-        h0 = torch.zeros(1, x.size(0), self.hidden_dim).to(x.device)
-        c0 = torch.zeros(1, x.size(0), self.hidden_dim).to(x.device)
-        out, _ = self.lstm(x, (h0, c0))
+        batch_size = x.shape[0]
+        # hidden state
+        h0 = torch.zeros(1, batch_size, self.hidden_dim).to(x.device)
+        # cell state
+        c0 = torch.zeros(1, batch_size, self.hidden_dim).to(x.device)
+        out, _ = self.lstm(x, (h0, c0)) # ignore the final (h-n,c-n) recursive values by '_'
         out = self.fc(out[:, -1, :])  # Use only the last timestep's output
         return out
-

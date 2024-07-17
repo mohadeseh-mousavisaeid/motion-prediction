@@ -74,12 +74,12 @@ hidden_size = 32
 ######## Physics Based Model:
 # mdl = ConstantVelocityModel()
 # mdl = ConstantAccelerationModel()
-mdl = SingleTrackModel()
+# mdl = SingleTrackModel()
 
 ####### Data Based Model:
 # mdl = MultiLayerPerceptron(input_size, hidden_size, output_size)
 # mdl = RNNModel(input_size, hidden_size, output_size)
-# mdl = LSTMModel(input_size, hidden_size, output_size)
+mdl = LSTMModel(input_size, hidden_size, output_size)
 
 #######################################################################
 
@@ -96,7 +96,7 @@ dm = inD_RecordingModule(data_path, recording_ID, sequence_length, past_sequence
 #################### Setup Training #####################################
 # TODO: Change the epochs to the number of epochs you want to train
 epochs = 1
-model = LitModule(mdl, number_of_features, sequence_length, past_sequence_length, future_sequence_length, batch_size, Model.SINGLE_TRACK.value)
+model = LitModule(mdl, number_of_features, sequence_length, past_sequence_length, future_sequence_length, batch_size, Model.LSTM.value)
 
 dm.setup(stage=stage)
 

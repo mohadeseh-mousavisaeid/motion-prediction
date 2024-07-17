@@ -95,11 +95,10 @@ def lstm_step(self, batch, batch_idx, string):
     for k in range(self.future_sequence_length):
         # Forward pass
         y_hat_k = self(x)
-        y_hat_list.append(y_hat_k)
-
         # Prepare input for next step
         if y_hat_k.dim() < 3:
             y_hat_k = y_hat_k.unsqueeze(1)
+        y_hat_list.append(y_hat_k)
         x = torch.cat([x[:, 1:, :], y_hat_k], dim=1)
     
     # Stack predictions and compute loss
