@@ -44,6 +44,30 @@ def mlp_step(self, batch, batch_idx, string):
     return loss
 
 
+def lstm_step(self, batch, batch_idx, string):
+
+    # Prepare data for step
+    x, y = prep_data_for_step(self,batch)
+    
+    y_hat_list = []
+    for k in range(self.future_sequence_length):
+        # Forward pass
+        y_hat_k = self(x)
+        y_hat_list.append(y_hat_k)
+
+        # Prepare input for next step
+        if y_hat_k.dim() < 3:
+            y_hat_k = y_hat_k.unsqueeze(1)
+        x = torch.cat([x[:, 1:, :], y_hat_k], dim=1)
+    
+    # Stack predictions and compute loss
+    y_hat = torch.stack(y_hat_list, dim=1).squeeze()
+    loss = F.mse_loss(y_hat, y)
+    self.log(f"{string}_loss", loss)
+    
+    return loss
+
+
 
 # TODO: This is a hacky way to load one rectangular block from the data, and divide it into x and y of different
 #  sizes afterwards.
