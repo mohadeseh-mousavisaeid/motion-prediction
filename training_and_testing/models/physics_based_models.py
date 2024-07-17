@@ -21,9 +21,6 @@ class ConstantVelocityModel(nn.Module):
         new_x_center = x_center + self.dt * x_velocity
         new_y_center = y_center + self.dt * y_velocity
         new_positions = torch.stack((new_x_center, new_y_center, x_velocity, y_velocity), dim=1)  # shape: (batch_size, 4)
-
-        # Replicate the new_positions to match the number of features
-        # new_positions = new_positions.unsqueeze(-1).expand(-1, -1, x.shape[-1])  # shape: (batch_size, 2, number_of_features)
         
         return new_positions
     
@@ -52,12 +49,8 @@ class ConstantAccelerationModel(nn.Module):
         # Create new positions tensor with the shape (batch_size, 2)
         new_positions = torch.stack((new_x_center, new_y_center,x_velocity, y_velocity,x_acceleration,y_acceleration), dim=1)  # shape: (batch_size, 6)
         
-        # Replicate the new_positions to match the number of features
-        # new_positions = new_positions.unsqueeze(-1).expand(-1, -1, x.shape[-1])  # shape: (batch_size, 2, number_of_features)
-        
         return new_positions
 
-# Single Track Model (Bicycle Model)
 class SingleTrackModel(nn.Module):
     def __init__(self, dt=1.0):
         super(SingleTrackModel, self).__init__()
@@ -69,11 +62,11 @@ class SingleTrackModel(nn.Module):
         x_last = x[:, -1, :]  # shape: (batch_size, number_of_features)
 
         # Extract features from the last time step
-        x_center = x_last[:, 1]  # xCenter
-        y_center = x_last[:, 2]  # yCenter
-        heading = x_last[:, 3]  # heading
-        x_velocity = x_last[:, 4]  # xVelocity
-        y_velocity = x_last[:, 5]  # yVelocity
+        x_center = x_last[:, 0]  # xCenter
+        y_center = x_last[:, 1]  # yCenter
+        heading = x_last[:, 2]  # heading
+        x_velocity = x_last[:, 3]  # xVelocity
+        y_velocity = x_last[:, 4]  # yVelocity
         
         # Calculate the change in position considering the heading
         delta_x = (x_velocity * torch.cos(heading) - y_velocity * torch.sin(heading)) * self.dt
@@ -84,9 +77,6 @@ class SingleTrackModel(nn.Module):
         new_y_center = y_center + delta_y
 
         # Create new positions tensor with the shape (batch_size, 2)
-        new_positions = torch.stack((new_x_center, new_y_center), dim=1)  # shape: (batch_size, 2)
-        
-        # Replicate the new_positions to match the number of features
-        new_positions = new_positions.unsqueeze(-1).expand(-1, -1, x.shape[-1])  # shape: (batch_size, 2, number_of_features)
+        new_positions = torch.stack((new_x_center, new_y_center,heading,x_velocity,y_velocity), dim=1)  # shape: (batch_size, 5)
         
         return new_positions
