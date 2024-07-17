@@ -20,13 +20,11 @@ from callbacks import create_callbacks
 from lit_datamodule import inD_RecordingModule
 
 from utils import create_wandb_logger, get_data_path, build_module
-# from nn_modules import ConstantVelocityModel, MultiLayerPerceptron
-
-from lit_modules.lit_module_physics_based import LitModule
-# from lit_modules.lit_module import LitModule
+from lit_module import LitModule
 from models.physics_based_models import ConstantVelocityModel, ConstantAccelerationModel, SingleTrackModel
-# from models.data_based_models import MultiLayerPerceptron, RNNModel, LSTMModel
+from models.data_based_models import MultiLayerPerceptron, LSTMModel
 from select_features import select_features
+from enums.model import Model
 
 ##################################################################
 torch.set_float32_matmul_precision('medium')
@@ -44,6 +42,7 @@ project_name = "SS2024_motion_prediction"
 # TODO: The stages are defined in the lit_datamodule.py file. Right now, we have a train, val, and test stage.
 #  For some of the models you dont actually train anything, like the constant velocity model, you can simply use the test stage.
 #  The test stage should also be used for the final evaluation of any model.
+
 # stage = "fit"
 stage = "test"
 #################### Training Parameters #####################################
@@ -72,14 +71,12 @@ hidden_size = 32
 # TODO: Create you models in the nn_modules.py file. You can create as many models as you want. The models should be
 #  defined as a class. The class should inherit from torch.nn.Module. Check out the MLPModel class in the nn_modules.py!
 
-# Physics Based Model:
-
+######## Physics Based Model:
 mdl = ConstantVelocityModel()
 # mdl = ConstantAccelerationModel()
 # mdl = SingleTrackModel()
 
-# Data Based Model:
-
+####### Data Based Model:
 # mdl = MultiLayerPerceptron(input_size, hidden_size, output_size)
 # mdl = RNNModel(input_size, hidden_size, output_size)
 # mdl = LSTMModel(input_size, hidden_size, output_size)
@@ -99,7 +96,7 @@ dm = inD_RecordingModule(data_path, recording_ID, sequence_length, past_sequence
 #################### Setup Training #####################################
 # TODO: Change the epochs to the number of epochs you want to train
 epochs = 1
-model = LitModule(mdl, number_of_features, sequence_length, past_sequence_length, future_sequence_length, batch_size)
+model = LitModule(mdl, number_of_features, sequence_length, past_sequence_length, future_sequence_length, batch_size, Model.CONSTANT_VELOCITY.value)
 
 dm.setup(stage=stage)
 

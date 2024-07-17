@@ -1,6 +1,7 @@
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
+from step_factory import StepFactory
 
 
 class LitModule(pl.LightningModule):
@@ -13,7 +14,7 @@ class LitModule(pl.LightningModule):
         we define a single `step` function, and then define `training_step`,
         `validation_step`, and `test_step` as thin wrappers that call `step`.
     """
-    def __init__(self, model, number_of_features, sequence_length, past_sequence_length, future_sequence_length, batch_size):
+    def __init__(self, model, number_of_features, sequence_length, past_sequence_length, future_sequence_length, batch_size,current_model):
         super().__init__()
         self.model = model
         self.nx = number_of_features
@@ -21,6 +22,10 @@ class LitModule(pl.LightningModule):
         self.past_sequence_length = past_sequence_length
         self.future_sequence_length = future_sequence_length
         self.batch_size = batch_size
+        self.current_model = current_model
+
+
+    
 
 
     def forward(self, x):
@@ -28,49 +33,18 @@ class LitModule(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         string = "training"
-        loss = self.step(batch, batch_idx, string)
+        loss = StepFactory.get_step(self, batch, batch_idx, string , self.current_model)
         return loss
 
     def validation_step(self, batch, batch_idx):
         string = "validation"
-        loss = self.step(batch, batch_idx, string)
+        loss = StepFactory.get_step(self, batch, batch_idx, string , self.current_model)
         return loss
 
     def test_step(self, batch, batch_idx):
         string = "test"
-        loss = self.step(batch, batch_idx, string)
+        loss = StepFactory.get_step(self, batch, batch_idx, string , self.current_model)
         return loss
-
-    def step(self, batch, batch_idx, string):
-        """
-        This is the main step function that is used by training_step, validation_step, and test_step.
-        """
-        # TODO: You have to modify this based on your task, model and data. This is where most of the engineering happens!
-        x, y = self.prep_data_for_step(batch)
-        features = [1, 2, 4, 5]
-        x_features = x[:, :, features]
-        y_hat_list = []
-        for k in range(self.future_sequence_length):
-            y_hat_k = self(x_features)
-            y_hat_list.append(y_hat_k)
-            if y_hat_k.dim() < 3:
-                y_hat_k = y_hat_k.unsqueeze(1)
-            x_features = torch.cat([x_features[:, 1:, :], y_hat_k], dim=1)
-
-        y_hat = torch.stack(y_hat_list, dim=1).squeeze(dim=2)
-        y_compare = y[:, :, 1:3]
-        y_hat_compare = y_hat[:, :, 0:2]
-        loss = F.mse_loss(y_hat_compare, y_compare)
-        self.log(f"{string}_loss", loss)
-        return loss
-
-    def prep_data_for_step(self, batch):
-        # TODO: This is a hacky way to load one rectangular block from the data, and divide it into x and y of different
-        #  sizes afterwards.
-        #  If you don't do it like this, you run into trouble. Just stay aware of this.
-        x = batch[:, :self.past_sequence_length, :]
-        y = batch[:, self.past_sequence_length:, :]
-        return x, y
 
     def configure_optimizers(self):
         parameters = [p for p in self.parameters() if p.requires_grad]
