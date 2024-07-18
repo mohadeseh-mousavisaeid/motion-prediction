@@ -52,15 +52,21 @@ recording_ID = ["00"]#, "03", "04", "05", "06", "07", "08", "09", "10", "11", "1
 # TODO: Change the features to the features you want to use. The features are defined in the select_features.py file
 # This is referring to an unmodified dataset. So depending on your goal, modify the dataset and set the features accordingly.
 #  If you change your dataset, you have to change recreate a feature list that suits your dataset
+
 features, number_of_features = select_features()
-past_sequence_length = 2
-future_sequence_length = 3
+# LSTM: better to set 1 for these 
+past_sequence_length = 1
+future_sequence_length = 1 
 sequence_length = past_sequence_length + future_sequence_length
 
 #################### Model Parameters #####################################
 
 batch_size = 50
-input_size = number_of_features * past_sequence_length
+# for MLP
+# input_size = number_of_features * past_sequence_length
+
+# LSTM
+input_size = number_of_features
 output_size = number_of_features
 hidden_size = 32
 
@@ -77,9 +83,9 @@ hidden_size = 32
 # mdl = SingleTrackModel()
 
 ####### Data Based Model:
-# mdl = MultiLayerPerceptron(input_size, hidden_size, output_size)
+mdl = MultiLayerPerceptron(input_size, hidden_size, output_size)
 # mdl = RNNModel(input_size, hidden_size, output_size)
-mdl = LSTMModel(input_size, hidden_size, output_size)
+# mdl = LSTMModel(input_size, hidden_size, output_size)
 
 #######################################################################
 
@@ -96,7 +102,7 @@ dm = inD_RecordingModule(data_path, recording_ID, sequence_length, past_sequence
 #################### Setup Training #####################################
 # TODO: Change the epochs to the number of epochs you want to train
 epochs = 1
-model = LitModule(mdl, number_of_features, sequence_length, past_sequence_length, future_sequence_length, batch_size, Model.LSTM.value)
+model = LitModule(mdl, number_of_features, sequence_length, past_sequence_length, future_sequence_length, batch_size, Model.MLP.value)
 
 dm.setup(stage=stage)
 

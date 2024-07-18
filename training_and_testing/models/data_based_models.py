@@ -20,7 +20,7 @@ class MultiLayerPerceptron(nn.Module):
         batch_size = x.shape[0]
         x = x.flatten(start_dim=1)
         x = self.layers(x)
-        x = x.view(batch_size, -1, self.output_dim)
+        x = x.view(batch_size, -1, self.output_dim) # for stacking
         return x
     
 
@@ -55,10 +55,16 @@ class LSTMModel(nn.Module):
 
     def forward(self, x):
         batch_size = x.shape[0]
+
+        # in case we want to clear the history of one obj to jump to the other
+        
         # hidden state
-        h0 = torch.zeros(1, batch_size, self.hidden_dim).to(x.device)
+        # h0 = torch.zeros(1, batch_size, self.hidden_dim).to(x.device)
         # cell state
-        c0 = torch.zeros(1, batch_size, self.hidden_dim).to(x.device)
-        out, _ = self.lstm(x, (h0, c0)) # ignore the final (h-n,c-n) recursive values by '_'
+        # c0 = torch.zeros(1, batch_size, self.hidden_dim).to(x.device)
+        # out, _ = self.lstm(x, (h0, c0)) 
+
+
+        out, _ = self.lstm(x) # ignore the final (h-n,c-n) recursive values by '_'
         out = self.fc(out[:, -1, :])  # Use only the last timestep's output
         return out
