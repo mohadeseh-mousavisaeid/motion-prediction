@@ -3,10 +3,12 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset
 from torchvision import transforms
-
+from sklearn.preprocessing import LabelEncoder
+from enums.motion_object import MotionObject
+from rich.text import Text
 
 class inD_RecordingDataset(Dataset):
-    def __init__(self, path, recording_id, sequence_length, features,  train=True):
+    def __init__(self, path, recording_id, sequence_length, features_tracks, features_tracksmeta, motion_obj:MotionObject=None,  train=True):
         """Dataset for inD dataset.
         Parameters
         ----------
@@ -25,26 +27,74 @@ class inD_RecordingDataset(Dataset):
         self.path = path
         self.recording_id = recording_id
         self.sequence_length = sequence_length
-        self.features = features
+        self.features_tracks = features_tracks
+        self.features_tracksmeta = features_tracksmeta
+        self.motion_obj = motion_obj
         self.train = train
         self.transform = self.get_transform()
         if type(self.recording_id) == list:
             self.data = pd.DataFrame()
+            tracks_data = pd.DataFrame()
+            tracksMeta_data = pd.DataFrame()
             # TODO: Here we are simply loading the csv and stack them into one pandas dataframe.
             # You have to change this to load your data. This is just meant as a dummy example!!!
             for id in self.recording_id:
-                with open(f"{path}/{id}_tracks.csv", 'rb') as f:
-                    self.data = pd.concat([self.data, pd.read_csv(f, delimiter=',', header=0, usecols=self.features, dtype='float16')])
-                    print(self.data)
-        else:
-            with open(f"{path}/{recording_id}_tracks.csv", 'rb') as f:
-                self.data = pd.read_csv(f, delimiter=',', header=0, usecols=self.features, dtype='float16')
-                # print(self.data)
 
+                if(motion_obj==None):
+                    all_report_txt = Text("Trial and Errors of the entire dataset!", style="bold green")
+                    print(all_report_txt)
+                    with open(f"{path}/{id}_tracks.csv", 'rb') as f:
+                        self.data = pd.concat([self.data, pd.read_csv(f, delimiter=',', header=0, usecols=self.features_tracks, dtype='float16')])
+                        print(self.data)
+                else:
+                    report_txt = Text("Trial and Errors on: " + str(motion_obj.name), style="bold green")
+                    print(report_txt)
+                    with open(f"{path}/{id}_tracks.csv", 'rb') as f:
+                        tracks_data = pd.concat([tracks_data, pd.read_csv(f, delimiter=',', header=0, usecols=self.features_tracks, dtype='float64')])
+
+                    with open(f"{path}/{id}_tracksMeta.csv", 'rb') as f:
+                        tracksMeta_data = pd.concat([tracksMeta_data, pd.read_csv(f, delimiter=',', header=0, usecols=self.features_tracksmeta)])
+
+                    # Label encoding - make to dtype = 'float64'
+                    # create a LabelEncoder object
+                    le = LabelEncoder()
+                    # Extract Precipitation Type as an array
+                    item_types = np.array(tracksMeta_data['class'])
+                    # label encode the 'Precip Type' column
+                    tracksMeta_data['class'] = le.fit_transform(item_types)
+                    # Left join with main table
+                    merged_data = tracks_data.merge(tracksMeta_data, on='trackId', how='left')
+
+                    self.data = merged_data[(merged_data["class"] == self.motion_obj.value)]
+                    encoded_values = list(le.classes_)
+                    actual_values = sorted(list(tracksMeta_data['class'].unique()))
+
+
+        else:
+            self.data = pd.DataFrame()
+            with open(f"{path}/{recording_id}_tracks.csv", 'rb') as f:
+                tracks_data = pd.concat([self.data, pd.read_csv(f, delimiter=',', header=0, usecols=self.features_tracks, dtype='float64')])
+                # self.data = pd.read_csv(f, delimiter=',', header=0, usecols=self.features, dtype='str')
+
+            with open(f"{path}/{id}_tracksMeta.csv", 'rb') as f:
+                tracksMeta_data = pd.read_csv(f, delimiter=',', header=0, usecols=self.features_tracksmeta)
+                # Label encoding - make to dtype = 'float64'
+                # create a LabelEncoder object
+                le = LabelEncoder()
+                # Extract Precipitation Type as an array
+                item_types = np.array(tracksMeta_data['class'])
+                # label encode the 'Precip Type' column
+                tracksMeta_data['class'] = le.fit_transform(item_types)
+                # Left join with main table
+                merged_data = tracks_data.merge(tracksMeta_data, on='trackId', how='left')
+
+                self.data = merged_data[(merged_data["class"] == self.motion_obj.value)]
+
+                # self.data = pd.concat([self.data, pd.read_csv(f, delimiter=',', header=0, usecols=self.features, dtype='float64')])
+                print(self.data)
 
     def __len__(self):
-        """
-        Returns the length of the dataset.
+        """Returns the length of the dataset.
         """
         return len(self.data) - self.sequence_length
 
@@ -61,10 +111,11 @@ class inD_RecordingDataset(Dataset):
             The data at index idx.
         """
         if idx <= self.__len__():
+            # for each step this function will be called
             data = self.data[idx:idx + self.sequence_length]
-
+            # data type tensor specific for pytorh is like and array
             if self.transform:
-                data = self.transform(np.array(data, dtype='float16')).squeeze()
+                data = self.transform(np.array(data)).squeeze()
             return data
         else:
             print("wrong index")
@@ -77,5 +128,4 @@ class inD_RecordingDataset(Dataset):
         data_transforms = transforms.Compose([
             transforms.ToTensor(),
         ])
-
         return data_transforms

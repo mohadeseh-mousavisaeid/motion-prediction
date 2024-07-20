@@ -18,6 +18,7 @@ import torch
 import wandb
 from callbacks import create_callbacks
 from lit_datamodule import inD_RecordingModule
+from enums.motion_object import MotionObject
 
 from utils import create_wandb_logger, get_data_path, build_module
 from lit_module import LitModule
@@ -47,16 +48,16 @@ project_name = "SS2024_motion_prediction"
 stage = "test"
 #################### Training Parameters #####################################
 # TODO: Change the recording_ID to the recordings you want to train on
-recording_ID = ["00"]#, "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32"]
+recording_ID = ["09"]#, "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32"]
 
 # TODO: Change the features to the features you want to use. The features are defined in the select_features.py file
 # This is referring to an unmodified dataset. So depending on your goal, modify the dataset and set the features accordingly.
 #  If you change your dataset, you have to change recreate a feature list that suits your dataset
 
-features, number_of_features = select_features()
+features_tracks,features_tracksmeta, number_of_features = select_features()
 # LSTM: better to set 1 for these 
-past_sequence_length = 1
-future_sequence_length = 1 
+past_sequence_length = 5
+future_sequence_length = 5 
 sequence_length = past_sequence_length + future_sequence_length
 
 #################### Model Parameters #####################################
@@ -68,7 +69,7 @@ batch_size = 50
 # LSTM
 input_size = number_of_features
 output_size = number_of_features
-hidden_size = 32
+hidden_size = 50
 
 
 #################### Create Models #####################################
@@ -78,12 +79,12 @@ hidden_size = 32
 #  defined as a class. The class should inherit from torch.nn.Module. Check out the MLPModel class in the nn_modules.py!
 
 ######## Physics Based Model:
-# mdl = ConstantVelocityModel()
+mdl = ConstantVelocityModel()
 # mdl = ConstantAccelerationModel()
 # mdl = SingleTrackModel()
 
 ####### Data Based Model:
-mdl = MultiLayerPerceptron(input_size, hidden_size, output_size)
+# mdl = MultiLayerPerceptron(input_size, hidden_size, output_size)
 # mdl = RNNModel(input_size, hidden_size, output_size)
 # mdl = LSTMModel(input_size, hidden_size, output_size)
 
@@ -95,14 +96,28 @@ mdl = MultiLayerPerceptron(input_size, hidden_size, output_size)
 #  The datamodule is defined in the kinematic_bicycle_datasetclass.py file
 #  The data set is defined in the lit_dataset.py file
 #  Check them out now!
-dm = inD_RecordingModule(data_path, recording_ID, sequence_length, past_sequence_length, future_sequence_length, features, batch_size=batch_size)
+dm = inD_RecordingModule(data_path, 
+                         recording_ID, 
+                         sequence_length, 
+                         past_sequence_length, 
+                         future_sequence_length, 
+                         features_tracks,
+                         features_tracksmeta,
+                        #  motion_obj= MotionObject.BICYCLE,
+                         batch_size=batch_size)
 
 
 
 #################### Setup Training #####################################
 # TODO: Change the epochs to the number of epochs you want to train
 epochs = 1
-model = LitModule(mdl, number_of_features, sequence_length, past_sequence_length, future_sequence_length, batch_size, Model.MLP.value)
+model = LitModule(mdl,
+                  number_of_features,
+                  sequence_length,
+                  past_sequence_length,
+                  future_sequence_length,
+                  batch_size,
+                  Model.CONSTANT_VELOCITY.value)
 
 dm.setup(stage=stage)
 
