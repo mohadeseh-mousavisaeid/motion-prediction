@@ -48,7 +48,7 @@ project_name = "SS2024_motion_prediction"
 stage = "test"
 #################### Training Parameters #####################################
 # TODO: Change the recording_ID to the recordings you want to train on
-recording_ID = ["09"]#, "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32"]
+recording_ID = ["00"]#, "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32"]
 
 # TODO: Change the features to the features you want to use. The features are defined in the select_features.py file
 # This is referring to an unmodified dataset. So depending on your goal, modify the dataset and set the features accordingly.
@@ -79,8 +79,8 @@ hidden_size = 50
 #  defined as a class. The class should inherit from torch.nn.Module. Check out the MLPModel class in the nn_modules.py!
 
 ######## Physics Based Model:
-mdl = ConstantVelocityModel()
-# mdl = ConstantAccelerationModel()
+# mdl = ConstantVelocityModel()
+mdl = ConstantAccelerationModel()
 # mdl = SingleTrackModel()
 
 ####### Data Based Model:
@@ -103,7 +103,7 @@ dm = inD_RecordingModule(data_path,
                          future_sequence_length, 
                          features_tracks,
                          features_tracksmeta,
-                        #  motion_obj= MotionObject.BICYCLE,
+                         motion_obj= MotionObject.BICYCLE,
                          batch_size=batch_size)
 
 
@@ -117,7 +117,7 @@ model = LitModule(mdl,
                   past_sequence_length,
                   future_sequence_length,
                   batch_size,
-                  Model.CONSTANT_VELOCITY.value)
+                  Model.CONSTANT_ACCELARATION.value)
 
 dm.setup(stage=stage)
 

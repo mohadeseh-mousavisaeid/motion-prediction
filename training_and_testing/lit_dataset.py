@@ -3,9 +3,9 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset
 from torchvision import transforms
-from sklearn.preprocessing import LabelEncoder
 from enums.motion_object import MotionObject
 from rich.text import Text
+from preProcessing import DataPreprocessor
 
 class inD_RecordingDataset(Dataset):
     def __init__(self, path, recording_id, sequence_length, features_tracks, features_tracksmeta, motion_obj:MotionObject=None,  train=True):
@@ -53,21 +53,16 @@ class inD_RecordingDataset(Dataset):
                         tracks_data = pd.concat([tracks_data, pd.read_csv(f, delimiter=',', header=0, usecols=self.features_tracks, dtype='float64')])
 
                     with open(f"{path}/{id}_tracksMeta.csv", 'rb') as f:
-                        tracksMeta_data = pd.concat([tracksMeta_data, pd.read_csv(f, delimiter=',', header=0, usecols=self.features_tracksmeta)])
-
-                    # Label encoding - make to dtype = 'float64'
-                    # create a LabelEncoder object
-                    le = LabelEncoder()
-                    # Extract Precipitation Type as an array
-                    item_types = np.array(tracksMeta_data['class'])
-                    # label encode the 'Precip Type' column
-                    tracksMeta_data['class'] = le.fit_transform(item_types)
-                    # Left join with main table
-                    merged_data = tracks_data.merge(tracksMeta_data, on='trackId', how='left')
-
-                    self.data = merged_data[(merged_data["class"] == self.motion_obj.value)]
-                    encoded_values = list(le.classes_)
-                    actual_values = sorted(list(tracksMeta_data['class'].unique()))
+                        tracksMeta_data = pd.concat([tracksMeta_data, pd.read_csv(f, delimiter=',', header=0, usecols=self.features_tracksmeta)])                  
+                    
+                    # ------- Preprocessing Steps -----------
+                    
+                    preprocessor = DataPreprocessor(data=tracks_data,meta_data=tracksMeta_data)
+                    # preprocessor.downsample(fraction=0.8)
+                    preprocessor.label_encode(join_on='trackId',join_method='left', motion_obj= self.motion_obj)
+                    preprocessor.normalize()
+                    self.data = preprocessor.get_processed_data()
+                    
 
 
         else:
@@ -77,21 +72,10 @@ class inD_RecordingDataset(Dataset):
                 # self.data = pd.read_csv(f, delimiter=',', header=0, usecols=self.features, dtype='str')
 
             with open(f"{path}/{id}_tracksMeta.csv", 'rb') as f:
-                tracksMeta_data = pd.read_csv(f, delimiter=',', header=0, usecols=self.features_tracksmeta)
-                # Label encoding - make to dtype = 'float64'
-                # create a LabelEncoder object
-                le = LabelEncoder()
-                # Extract Precipitation Type as an array
-                item_types = np.array(tracksMeta_data['class'])
-                # label encode the 'Precip Type' column
-                tracksMeta_data['class'] = le.fit_transform(item_types)
-                # Left join with main table
-                merged_data = tracks_data.merge(tracksMeta_data, on='trackId', how='left')
-
-                self.data = merged_data[(merged_data["class"] == self.motion_obj.value)]
-
-                # self.data = pd.concat([self.data, pd.read_csv(f, delimiter=',', header=0, usecols=self.features, dtype='float64')])
-                print(self.data)
+                preprocessor = DataPreprocessor(data=tracks_data,meta_data=tracksMeta_data)
+                preprocessor.label_encode(join_on='trackId',join_method='left', motion_obj= self.motion_obj)
+                preprocessor.normalize()
+                self.data = preprocessor.get_processed_data()
 
     def __len__(self):
         """Returns the length of the dataset.
