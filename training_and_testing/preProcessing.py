@@ -6,7 +6,7 @@ from enums.motion_object import MotionObject
 import logging
 
 class DataPreprocessor:
-    def __init__(self, data:DataFrame, meta_data:DataFrame):
+    def __init__(self, data:DataFrame, meta_data:DataFrame=None):
         self.data = data
         self.meta_data = meta_data
 
@@ -30,7 +30,7 @@ class DataPreprocessor:
         actual_values = sorted(list(self.meta_data['class'].unique()))
 
     def normalize(self):
-        numerical_features = self.data.select_dtypes(include=['float64', 'int64']).columns
+        numerical_features = self.data.select_dtypes(include=['float64', 'int64', 'float16']).columns
         if len(numerical_features) == 0:
             raise ValueError("No numerical features found to normalize.")
         
@@ -42,8 +42,8 @@ class DataPreprocessor:
         self.data[numerical_features]= scaler.fit_transform(self.data[numerical_features])   
                          
         # Z-Score Normalization
-        scaler = StandardScaler()
-        self.data[numerical_features] = scaler.fit_transform(self.data[numerical_features])
+        # scaler = StandardScaler()
+        # self.data[numerical_features] = scaler.fit_transform(self.data[numerical_features])
         
     def get_processed_data(self):
         return self.data

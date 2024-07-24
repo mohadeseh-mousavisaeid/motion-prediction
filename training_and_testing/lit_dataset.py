@@ -44,8 +44,12 @@ class inD_RecordingDataset(Dataset):
                     all_report_txt = Text("Trial and Errors of the entire dataset!", style="bold green")
                     print(all_report_txt)
                     with open(f"{path}/{id}_tracks.csv", 'rb') as f:
-                        self.data = pd.concat([self.data, pd.read_csv(f, delimiter=',', header=0, usecols=self.features_tracks, dtype='float16')])
-                        print(self.data)
+                        all_data = pd.concat([self.data, pd.read_csv(f, delimiter=',', header=0, usecols=self.features_tracks, dtype='float16')])
+                        preprocessor = DataPreprocessor(data=all_data)
+                        # preprocessor.downsample(fraction=0.8)
+                        preprocessor.normalize()
+                        self.data = preprocessor.get_processed_data()
+                        # print(self.data)
                 else:
                     report_txt = Text("Trial and Errors on: " + str(motion_obj.name), style="bold green")
                     print(report_txt)
@@ -73,6 +77,7 @@ class inD_RecordingDataset(Dataset):
 
             with open(f"{path}/{id}_tracksMeta.csv", 'rb') as f:
                 preprocessor = DataPreprocessor(data=tracks_data,meta_data=tracksMeta_data)
+                # preprocessor.downsample(fraction=0.8)
                 preprocessor.label_encode(join_on='trackId',join_method='left', motion_obj= self.motion_obj)
                 preprocessor.normalize()
                 self.data = preprocessor.get_processed_data()

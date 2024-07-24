@@ -64,10 +64,10 @@ sequence_length = past_sequence_length + future_sequence_length
 
 batch_size = 50
 # for MLP
-# input_size = number_of_features * past_sequence_length
+input_size = number_of_features * past_sequence_length
 
 # LSTM
-input_size = number_of_features
+# input_size = number_of_features
 output_size = number_of_features
 hidden_size = 50
 
@@ -80,11 +80,11 @@ hidden_size = 50
 
 ######## Physics Based Model:
 # mdl = ConstantVelocityModel()
-mdl = ConstantAccelerationModel()
+# mdl = ConstantAccelerationModel()
 # mdl = SingleTrackModel()
 
 ####### Data Based Model:
-# mdl = MultiLayerPerceptron(input_size, hidden_size, output_size)
+mdl = MultiLayerPerceptron(input_size, hidden_size, output_size)
 # mdl = RNNModel(input_size, hidden_size, output_size)
 # mdl = LSTMModel(input_size, hidden_size, output_size)
 
@@ -103,7 +103,7 @@ dm = inD_RecordingModule(data_path,
                          future_sequence_length, 
                          features_tracks,
                          features_tracksmeta,
-                         motion_obj= MotionObject.BICYCLE,
+                        #  motion_obj= MotionObject.BICYCLE,
                          batch_size=batch_size)
 
 
@@ -117,7 +117,7 @@ model = LitModule(mdl,
                   past_sequence_length,
                   future_sequence_length,
                   batch_size,
-                  Model.CONSTANT_ACCELARATION.value)
+                  Model.MLP.value)
 
 dm.setup(stage=stage)
 
