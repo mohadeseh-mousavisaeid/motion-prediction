@@ -1,5 +1,5 @@
 from enums.model import Model
-from step.steps import mlp_step, lstm_step, constant_velocity_step, constant_accelaration_step, single_track_step
+from step.steps import mlp_step, lstm_step, constant_velocity_step, constant_accelaration_step, single_track_step,hybrid_parallel_step
 
 class StepFactory:
 
@@ -19,3 +19,6 @@ class StepFactory:
     
         elif model== Model.LSTM.value:
             return lstm_step(self,batch, batch_idx, string)
+        
+        elif model== Model.HYBRID_PARALLEL.value:
+            return hybrid_parallel_step(self,batch, batch_idx, string)

@@ -109,6 +109,59 @@ def lstm_step(self, batch, batch_idx, string):
     return loss
 
 
+def hybrid_parallel_step(self, batch, batch_idx, string):
+    # Prepare data for step
+    x, y = prep_data_for_step(self, batch)
+    
+    # Features used in the SingleTrackModel
+    single_track_features = [1, 2, 3, 4, 5]
+    x_features = x[:, :, single_track_features]
+    
+    y_hat_list = []
+    for k in range(self.future_sequence_length):
+        # Forward pass through the hybrid model
+        y_hat_k = self(x)
+        
+        # Ensure y_hat_k has the correct shape
+        if y_hat_k.dim() < 3:
+            y_hat_k = y_hat_k.unsqueeze(1)
+        y_hat_list.append(y_hat_k)
+        
+        # Debugging: Print shapes
+        print(f"Step {k}: y_hat_k shape: {y_hat_k.shape}")
+        
+        # Prepare input for next step for SingleTrackModel
+        if y_hat_k.shape[2] < len(single_track_features):
+            raise ValueError(f"Expected at least {len(single_track_features)} features from SingleTrackModel, got {y_hat_k.shape[2]}")
+        
+        x_features = torch.cat([x_features[:, 1:, :], y_hat_k[:, :, :len(single_track_features)]], dim=1)  # Use the first 5 features for SingleTrackModel
+        
+        # Ensure the sequence length is maintained
+        # x_features = x_features[:, -x.shape[1]:, :]
+        
+        # Prepare input for next step for LSTMModel
+        x = torch.cat([x[:, 1:, :], y_hat_k[:,:,:9]], dim=1)
+        
+        # Ensure the sequence length is maintained
+        # x = x[:, -x.shape[1]:, :]
+    
+    # Stack predictions and compute loss
+    y_hat = torch.stack(y_hat_list, dim=1).squeeze(dim=2)
+    
+    # Compute loss for SingleTrackModel predictions
+    y_compare = y[:, :, 1:3]
+    y_hat_compare = y_hat[:, :, 0:2]
+    single_track_loss = F.mse_loss(y_hat_compare, y_compare)
+    
+    # Compute loss for LSTMModel predictions
+    lstm_loss = F.mse_loss(y_hat[:,:,:9], y)
+    
+    # Combine losses (you can adjust the weights as needed)
+    loss = single_track_loss + lstm_loss
+    
+    self.log(f"{string}_loss", loss)
+    
+    return loss
 
 # TODO: This is a hacky way to load one rectangular block from the data, and divide it into x and y of different
 #  sizes afterwards.

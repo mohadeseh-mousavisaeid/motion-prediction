@@ -123,7 +123,7 @@ model = LitModule(mdl,
                   past_sequence_length,
                   future_sequence_length,
                   batch_size,
-                  Model.LSTM.value)
+                  Model.HYBRID_PARALLEL.value)
 
 dm.setup(stage=stage)
 
