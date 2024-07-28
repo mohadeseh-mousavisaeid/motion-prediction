@@ -24,7 +24,7 @@ class inD_RecordingModule(pl.LightningDataModule):
     batch_size : int
         Batch size.
     """
-    def __init__(self, data_path, recording_id,
+    def __init__(self, data_path, recording_id:list[str],
                  sequence_length, past_sequence_length, future_sequence_length, features_tracks,features_tracksmeta,motion_obj=None,
                  batch_size: int = 32):
         super().__init__()

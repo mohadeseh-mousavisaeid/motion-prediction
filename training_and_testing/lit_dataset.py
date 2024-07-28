@@ -8,7 +8,7 @@ from rich.text import Text
 from preProcessing import DataPreprocessor
 
 class inD_RecordingDataset(Dataset):
-    def __init__(self, path, recording_id, sequence_length, features_tracks, features_tracksmeta, motion_obj:MotionObject=None,  train=True):
+    def __init__(self, path, recording_id:list[str], sequence_length, features_tracks, features_tracksmeta, motion_obj:MotionObject=None,  train=True):
         """Dataset for inD dataset.
         Parameters
         ----------
@@ -43,13 +43,14 @@ class inD_RecordingDataset(Dataset):
                 if(motion_obj==None):
                     all_report_txt = Text("Trial and Errors of the entire dataset!", style="bold green")
                     print(all_report_txt)
-                    with open(f"{path}/{id}_tracks.csv", 'rb') as f:
+                    with open(f"{path}/{id}_tracks.csv", 'rb') as f:                    
                         all_data = pd.concat([self.data, pd.read_csv(f, delimiter=',', header=0, usecols=self.features_tracks, dtype='float16')])
                         preprocessor = DataPreprocessor(data=all_data)
-                        # preprocessor.downsample(fraction=0.8)
                         preprocessor.normalize()
-                        self.data = preprocessor.get_processed_data()
-                        # print(self.data)
+                        processedData = preprocessor.get_processed_data()
+                        # self.data= processedData
+                        self.data= processedData.head(100)
+                        
                 else:
                     report_txt = Text("Trial and Errors on: " + str(motion_obj.name), style="bold green")
                     print(report_txt)
@@ -65,7 +66,10 @@ class inD_RecordingDataset(Dataset):
                     # preprocessor.downsample(fraction=0.8)
                     preprocessor.label_encode(join_on='trackId',join_method='left', motion_obj= self.motion_obj)
                     preprocessor.normalize()
-                    self.data = preprocessor.get_processed_data()
+                    processedData = preprocessor.get_processed_data()
+                    # self.data= processedData
+                    self.data= processedData.head(100)
+                
                     
 
 
@@ -80,7 +84,9 @@ class inD_RecordingDataset(Dataset):
                 # preprocessor.downsample(fraction=0.8)
                 preprocessor.label_encode(join_on='trackId',join_method='left', motion_obj= self.motion_obj)
                 preprocessor.normalize()
-                self.data = preprocessor.get_processed_data()
+                processedData = preprocessor.get_processed_data()
+                self.data= processedData.head(100)
+                
 
     def __len__(self):
         """Returns the length of the dataset.

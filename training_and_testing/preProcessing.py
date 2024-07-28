@@ -20,26 +20,34 @@ class DataPreprocessor:
     
     def label_encode(self, join_on:str , join_method:str, motion_obj:MotionObject):
         
+        # Ensure the 'class' column contains uniformly strings or numbers
+        self.meta_data['class'] = self.meta_data['class'].astype(str)
+        
+        # Label encoding - make to dtype = 'float64'
+        # create a LabelEncoder object
         le = LabelEncoder()
+        # Extract Precipitation Type as an array
         item_types = np.array(self.meta_data['class'])
+        # label encode the 'Precip Type' column
         self.meta_data['class'] = le.fit_transform(item_types)
+        # Left join with main table
         merged_data = self.data.merge(self.meta_data, on=join_on, how=join_method)
-        self.data = self.data[(merged_data["class"] == motion_obj.value)]
+        self.data = merged_data[(merged_data["class"] == motion_obj.value)]
                             
         encoded_values = list(le.classes_)
         actual_values = sorted(list(self.meta_data['class'].unique()))
 
     def normalize(self):
-        numerical_features = self.data.select_dtypes(include=['float64', 'int64', 'float16']).columns
-        if len(numerical_features) == 0:
-            raise ValueError("No numerical features found to normalize.")
+        # numerical_features = self.data.select_dtypes(include=['float64', 'int64', 'float16']).columns
+        # if len(numerical_features) == 0:
+        #     raise ValueError("No numerical features found to normalize.")
         
         # ---------------------------- Normalization Steps------------------------------------
         
         # Min-Max
         scaler = MinMaxScaler()
-        # columns_to_normalize = self.data.columns[1:9]
-        self.data[numerical_features]= scaler.fit_transform(self.data[numerical_features])   
+        columns_to_normalize = self.data.columns[1:9]
+        self.data[columns_to_normalize]= scaler.fit_transform(self.data[columns_to_normalize])   
                          
         # Z-Score Normalization
         # scaler = StandardScaler()
