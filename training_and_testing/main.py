@@ -81,6 +81,7 @@ hidden_size = 50
 #  defined as a class. The class should inherit from torch.nn.Module. Check out the MLPModel class in the nn_modules.py!
 
 
+
 # --------------- Hybrid Model --------------------------------------------------
 mdl = HybridParallelModel(input_size, hidden_size, output_size)
 # mdl = HybridSerialModel(input_size, hidden_size, output_size)

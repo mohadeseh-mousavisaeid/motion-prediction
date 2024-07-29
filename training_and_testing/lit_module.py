@@ -25,11 +25,13 @@ class LitModule(pl.LightningModule):
         self.current_model = current_model
 
 
-    
-
-
     def forward(self, x):
-        return self.model(x)
+        #  TODO: hint! adding timer here Jul29
+        #  start timer
+        result = self.model(x)
+        #  start timer
+        # self.log
+        return result
 
     def training_step(self, batch, batch_idx):
         string = "training"
