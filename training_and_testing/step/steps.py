@@ -144,8 +144,47 @@ def hybrid_parallel_step(self, batch, batch_idx, string):
     
     # Combine losses (adjust the weights as needed)
     loss = single_track_loss + lstm_loss
+    self.log(f"{string}_loss", loss)
     
     return loss
+
+
+
+def hybrid_serial_step(self, batch, batch_idx, string):
+    
+    x, y = prep_data_for_step(self, batch)
+    features = [1, 2, 4, 5]
+    x_features = x[:, :, features]
+    y_hat_list = []
+    for k in range(self.future_sequence_length):
+        y_hat_k = self(x_features,flag=False)
+        if y_hat_k.dim() < 3:
+            y_hat_k = y_hat_k.unsqueeze(1)
+        y_hat_list.append(y_hat_k)
+        x_features = torch.cat([x_features[:, 1:, :], y_hat_k], dim=1)
+
+
+    y_hat = torch.stack(y_hat_list, dim=1).squeeze(dim=2)
+    
+    y_hat_hat_list = []
+    for k in range(self.future_sequence_length):
+        # Forward pass
+        y_hat_hat_k = self(y_hat,flag=True)
+        # Prepare input for next step
+        if y_hat_hat_k.dim() < 3:
+            y_hat_hat_k = y_hat_k.unsqueeze(1)
+        y_hat_hat_list.append(y_hat_hat_k)
+        y_hat = torch.cat([y_hat[:, 1:, :], y_hat_hat_k], dim=1)
+    
+    # Stack predictions and compute loss
+    y_hat_hat = torch.stack(y_hat_hat_list, dim=1).squeeze()
+
+    
+    loss = F.mse_loss(y_hat_hat, y)
+    
+    
+    return loss
+
 
 # TODO: This is a hacky way to load one rectangular block from the data, and divide it into x and y of different
 #  sizes afterwards.

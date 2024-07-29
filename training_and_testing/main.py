@@ -25,6 +25,7 @@ from lit_module import LitModule
 from models.physics_based_models import ConstantVelocityModel, ConstantAccelerationModel, SingleTrackModel
 from models.data_based_models import MultiLayerPerceptron, LSTMModel
 from models.hybrid_parallel_model import HybridParallelModel
+from models.hybrid_serial_model import HybridSerialModel
 from select_features import select_features
 from enums.model import Model
 
@@ -82,6 +83,7 @@ hidden_size = 50
 
 # --------------- Hybrid Model --------------------------------------------------
 mdl = HybridParallelModel(input_size, hidden_size, output_size)
+# mdl = HybridSerialModel(input_size, hidden_size, output_size)
 
 
 ######## Physics Based Model:
