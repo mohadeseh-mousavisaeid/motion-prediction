@@ -48,8 +48,8 @@ class inD_RecordingDataset(Dataset):
                         preprocessor = DataPreprocessor(data=all_data)
                         preprocessor.normalize()
                         processedData = preprocessor.get_processed_data()
-                        # self.data= processedData
-                        self.data= processedData.head(100)
+                        self.data= processedData
+                        # self.data= processedData.head(100)
                         
                 else:
                     report_txt = Text("Trial and Errors on: " + str(motion_obj.name), style="bold green")
@@ -67,8 +67,8 @@ class inD_RecordingDataset(Dataset):
                     preprocessor.label_encode(join_on='trackId',join_method='left', motion_obj= self.motion_obj)
                     preprocessor.normalize()
                     processedData = preprocessor.get_processed_data()
-                    # self.data= processedData
-                    self.data= processedData.head(100)
+                    self.data= processedData
+                    # self.data= processedData.head(100)
                 
                     
 
@@ -85,7 +85,8 @@ class inD_RecordingDataset(Dataset):
                 preprocessor.label_encode(join_on='trackId',join_method='left', motion_obj= self.motion_obj)
                 preprocessor.normalize()
                 processedData = preprocessor.get_processed_data()
-                self.data= processedData.head(100)
+                self.data= processedData
+                # self.data= processedData.head(100)
                 
 
     def __len__(self):

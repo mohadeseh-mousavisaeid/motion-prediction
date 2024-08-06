@@ -24,5 +24,5 @@ def select_features():
         "class",
         "trackId"
         ]
-    number_of_features = len(features_tracks) + len(features_tracksmeta)-1
+    number_of_features = len(features_tracks) + len(features_tracksmeta)-2
     return features_tracks, features_tracksmeta, number_of_features

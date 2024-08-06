@@ -50,7 +50,7 @@ project_name = "SS2024_motion_prediction"
 stage = "test"
 #################### Training Parameters #####################################
 # TODO: Change the recording_ID to the recordings you want to train on
-recording_ID = ["00","01"]#, "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32"]
+recording_ID = ["00"] #"01","02","03", "04", "05", "06", "07", "08", "09", "10" ,"11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32"]
 
 # TODO: Change the features to the features you want to use. The features are defined in the select_features.py file
 # This is referring to an unmodified dataset. So depending on your goal, modify the dataset and set the features accordingly.
@@ -58,8 +58,8 @@ recording_ID = ["00","01"]#, "03", "04", "05", "06", "07", "08", "09", "10", "11
 
 features_tracks,features_tracksmeta, number_of_features = select_features()
 # LSTM: better to set 1 for these 
-past_sequence_length = 5
-future_sequence_length = 5
+past_sequence_length = 3
+future_sequence_length = 2
 sequence_length = past_sequence_length + future_sequence_length
 
 #################### Model Parameters #####################################
@@ -83,7 +83,7 @@ hidden_size = 50
 
 
 # --------------- Hybrid Model --------------------------------------------------
-mdl = HybridParallelModel(input_size, hidden_size, output_size)
+# mdl = HybridParallelModel(input_size, hidden_size, output_size)
 # mdl = HybridSerialModel(input_size, hidden_size, output_size)
 
 
@@ -93,7 +93,7 @@ mdl = HybridParallelModel(input_size, hidden_size, output_size)
 # mdl = SingleTrackModel()
 
 ####### Data Based Model:
-# mdl = MultiLayerPerceptron(input_size, hidden_size, output_size)
+mdl = MultiLayerPerceptron(input_size, hidden_size, output_size, past_sequence_length)
 # mdl = RNNModel(input_size, hidden_size, output_size)
 # mdl = LSTMModel(input_size, hidden_size, output_size)
 
@@ -112,7 +112,7 @@ dm = inD_RecordingModule(data_path,
                          future_sequence_length, 
                          features_tracks,
                          features_tracksmeta,
-                         motion_obj= MotionObject.CAR,
+                        #  motion_obj= MotionObject.BICYCLE,
                          batch_size=batch_size)
 
 
@@ -126,7 +126,7 @@ model = LitModule(mdl,
                   past_sequence_length,
                   future_sequence_length,
                   batch_size,
-                  Model.HYBRID_PARALLEL.value)
+                  Model.MLP.value)
 
 dm.setup(stage=stage)
 

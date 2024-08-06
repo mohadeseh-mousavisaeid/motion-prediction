@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
-from models.data_based_models import LSTMModel
-from models.physics_based_models import SingleTrackModel
-from models.physics_based_models import ConstantVelocityModel
+from data_based_models import LSTMModel
+from physics_based_models import SingleTrackModel
+from physics_based_models import ConstantVelocityModel
 
 
 class HybridSerialModel(nn.Module):
